@@ -155,20 +155,8 @@ exports.handler = async () => {
     // JSON API failed (likely Cloudflare 403), try CSV fallback
   }
 
-  // Strategy 2: Try the open data CSV
-  try {
-    const csv = await fetchCSV('https://www.tesourotransparente.gov.br/ckan/dataset/df56aa42-484a-4a59-8184-7676580c81e3/resource/796d2059-14e9-44e3-80c9-2d9e30b405c1/download/PressVenda.csv');
-    const data = parseCSVResponse(csv);
-    if (data && data.length > 0) {
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ data, source: 'csv', updated: new Date().toISOString() }),
-      };
-    }
-  } catch (e) {
-    // CSV also failed, use hardcoded data
-  }
+  // Strategy 2: CSV fallback disabled — Tesouro Transparente CSV is too large (>6MB)
+  // and exceeds Netlify function response limit. Skip to hardcoded data.
 
   // Strategy 3: Hardcoded fallback
   return {
