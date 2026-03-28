@@ -1483,51 +1483,48 @@ body {
   font-size: 0.55rem;
 }
 
-/* Mundo Mobile — two-column group layout */
+/* Mundo Mobile — single column, larger fonts */
 @media (max-width: 600px) {
   .mundo-grid {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr;
     gap: 1px;
   }
   .mundo-col {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 0;
-    min-width: 0;
-    background: var(--card-bg);
+    display: contents;
   }
   .mundo-card {
-    padding: 5px 8px;
-    gap: 4px;
+    padding: 10px 14px;
+    gap: 10px;
   }
   .mundo-icon {
-    display: none;
+    font-size: 1.1rem;
   }
   .mundo-info {
     flex: 1;
     min-width: 0;
   }
   .mundo-name {
-    font-size: 0.58rem;
+    font-size: 0.72rem;
   }
   .mundo-price {
-    font-size: 0.72rem;
+    font-size: 1.1rem;
   }
   .mundo-spark {
     flex: 0 0 auto;
-    width: 32px;
-    height: 16px;
+    width: 108px;
+    height: 28px;
   }
   .mundo-change {
-    font-size: 0.55rem;
-    min-width: 38px;
+    font-size: 0.8rem;
+    min-width: 52px;
   }
   .mundo-arrow {
-    font-size: 0.35rem;
+    font-size: 0.5rem;
   }
   .mundo-group-header {
-    padding: 5px 8px 2px;
-    font-size: 0.5rem;
+    padding: 10px 14px 4px;
+    font-size: 0.6rem;
     font-size: 0.5rem;
     border: none;
   }
@@ -2297,3 +2294,88 @@ body {
 }
 .calc-result-value.positive { color: var(--green); }
 .calc-result-value.negative { color: var(--red); }
+
+/* ─── Fund Chart Panel ─── */
+.fund-card-wrapper {
+  cursor: pointer;
+}
+.fund-card-wrapper .fund-card {
+  transition: border-color 0.2s;
+}
+.fund-card-wrapper:hover .fund-card {
+  border-color: var(--accent);
+}
+.fund-chart-hint {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-align: right;
+  margin-top: 4px;
+  padding-right: 4px;
+  opacity: 0.7;
+}
+.fund-chart-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+  background: var(--card-bg);
+  border-top: 1px solid var(--border);
+  border-radius: 0 0 12px 12px;
+  margin-top: -12px;
+  padding: 0 16px;
+}
+.fund-chart-panel.expanded {
+  max-height: 300px;
+  padding: 16px;
+}
+.fund-chart-title {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.fund-chart-svg {
+  width: 100%;
+  height: 200px;
+}
+.fund-chart-svg .chart-line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.fund-chart-svg .chart-area {
+  fill: url(#chartGradient);
+}
+.fund-chart-svg .chart-axis {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+.fund-chart-svg text {
+  fill: var(--text-secondary);
+  font-size: 10px;
+}
+.fund-chart-tooltip {
+  position: absolute;
+  background: var(--card-bg);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  pointer-events: none;
+  z-index: 10;
+  white-space: nowrap;
+}
+.fund-chart-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80px;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  gap: 8px;
+}
+.fund-chart-loading .loading-spinner {
+  width: 18px;
+  height: 18px;
+  border-width: 2px;
+}

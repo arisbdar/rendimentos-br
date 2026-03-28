@@ -312,6 +312,163 @@ function renderRendimentosChart(items, containerId) {
 
 // ─── Fundos DI Section ───
 
+// ─── Fund Historical Chart ───
+
+const fundChartCache = {};
+
+async function renderFundChart(cnpj, container) {
+  // Show loading
+  container.innerHTML = `<div class="fund-chart-loading"><div class="loading-spinner"></div> Carregando histórico...</div>`;
+
+  try {
+    let data;
+    if (fundChartCache[cnpj]) {
+      data = fundChartCache[cnpj];
+    } else {
+      const res = await fetch(`/api/fundos-historico?cnpj=${cnpj}`);
+      if (!res.ok) throw new Error('Falha ao carregar');
+      data = await res.json();
+      fundChartCache[cnpj] = data;
+    }
+
+    const historico = data.historico;
+    if (!historico || historico.length === 0) {
+      container.innerHTML = '<div class="fund-chart-loading">Sem dados históricos disponíveis.</div>';
+      return;
+    }
+
+    // Parse data
+    const points = historico.map(h => ({
+      date: new Date(h.date),
+      quota: parseFloat(h.quota)
+    })).sort((a, b) => a.date - b.date);
+
+    const quotas = points.map(p => p.quota);
+    const minQ = Math.min(...quotas);
+    const maxQ = Math.max(...quotas);
+    const qRange = maxQ - minQ || 1;
+
+    // Chart dimensions
+    const W = 600, H = 200;
+    const pad = { top: 10, right: 10, bottom: 25, left: 50 };
+    const cW = W - pad.left - pad.right;
+    const cH = H - pad.top - pad.bottom;
+
+    // Scale functions
+    const xScale = (i) => pad.left + (i / (points.length - 1)) * cW;
+    const yScale = (q) => pad.top + cH - ((q - minQ + qRange * 0.05) / (qRange * 1.1)) * cH;
+
+    // Build line path
+    const linePts = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${xScale(i).toFixed(1)},${yScale(p.quota).toFixed(1)}`).join(' ');
+
+    // Build area path (line + bottom edge)
+    const areaPts = linePts + ` L${xScale(points.length - 1).toFixed(1)},${(pad.top + cH).toFixed(1)} L${xScale(0).toFixed(1)},${(pad.top + cH).toFixed(1)} Z`;
+
+    // Y-axis labels (4 ticks)
+    const yTicks = [];
+    for (let i = 0; i < 4; i++) {
+      const val = minQ + (qRange * i) / 3;
+      yTicks.push({ val, y: yScale(val) });
+    }
+
+    // X-axis month labels
+    const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const seenMonths = new Set();
+    const xLabels = [];
+    points.forEach((p, i) => {
+      const key = `${p.date.getFullYear()}-${p.date.getMonth()}`;
+      if (!seenMonths.has(key)) {
+        seenMonths.add(key);
+        xLabels.push({ text: months[p.date.getMonth()], x: xScale(i) });
+      }
+    });
+
+    const yAxisLines = yTicks.map(t =>
+      `<line x1="${pad.left}" y1="${t.y.toFixed(1)}" x2="${(W - pad.right)}" y2="${t.y.toFixed(1)}" class="chart-axis" stroke-dasharray="3,3"/>
+       <text x="${pad.left - 5}" y="${(t.y + 3).toFixed(1)}" text-anchor="end">${t.val.toFixed(4)}</text>`
+    ).join('');
+
+    const xAxisLabels = xLabels.map(l =>
+      `<text x="${l.x.toFixed(1)}" y="${(H - 4)}" text-anchor="middle">${l.text}</text>`
+    ).join('');
+
+    container.innerHTML = `
+      <div class="fund-chart-title">Evolu\u00e7\u00e3o da Cota \u2014 \u00daltimos 3 meses</div>
+      <div style="position:relative">
+        <svg class="fund-chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="chartGradient-${cnpj.replace(/[^a-zA-Z0-9]/g, '')}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#00c853" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#00c853" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          ${yAxisLines}
+          ${xAxisLabels}
+          <path class="chart-area" d="${areaPts}" fill="url(#chartGradient-${cnpj.replace(/[^a-zA-Z0-9]/g, '')})" />
+          <path class="chart-line" d="${linePts}" />
+          <line class="chart-hover-line" x1="0" y1="${pad.top}" x2="0" y2="${pad.top + cH}" stroke="var(--accent)" stroke-width="1" stroke-dasharray="3,3" style="display:none"/>
+          <circle class="chart-hover-dot" cx="0" cy="0" r="4" fill="var(--accent)" style="display:none"/>
+          <rect class="chart-overlay" x="${pad.left}" y="${pad.top}" width="${cW}" height="${cH}" fill="transparent"/>
+        </svg>
+        <div class="fund-chart-tooltip" style="display:none"></div>
+      </div>`;
+
+    // Tooltip interactivity
+    const svg = container.querySelector('.fund-chart-svg');
+    const overlay = svg.querySelector('.chart-overlay');
+    const hoverLine = svg.querySelector('.chart-hover-line');
+    const hoverDot = svg.querySelector('.chart-hover-dot');
+    const tooltip = container.querySelector('.fund-chart-tooltip');
+
+    overlay.addEventListener('mousemove', (e) => {
+      const rect = svg.getBoundingClientRect();
+      const mouseX = (e.clientX - rect.left) / rect.width * W;
+      // Find nearest point
+      let nearest = 0;
+      let minDist = Infinity;
+      points.forEach((p, i) => {
+        const dist = Math.abs(xScale(i) - mouseX);
+        if (dist < minDist) { minDist = dist; nearest = i; }
+      });
+
+      const px = xScale(nearest);
+      const py = yScale(points[nearest].quota);
+      hoverLine.setAttribute('x1', px.toFixed(1));
+      hoverLine.setAttribute('x2', px.toFixed(1));
+      hoverLine.style.display = '';
+      hoverDot.setAttribute('cx', px.toFixed(1));
+      hoverDot.setAttribute('cy', py.toFixed(1));
+      hoverDot.style.display = '';
+
+      const d = points[nearest].date;
+      const dateStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+      tooltip.textContent = `${dateStr} — Cota: ${points[nearest].quota.toFixed(6)}`;
+      tooltip.style.display = '';
+
+      // Position tooltip in pixel space
+      const tooltipX = (px / W) * rect.width;
+      const tooltipY = (py / H) * rect.height;
+      tooltip.style.left = `${tooltipX + 10}px`;
+      tooltip.style.top = `${tooltipY - 30}px`;
+
+      // Flip if near right edge
+      if (tooltipX > rect.width * 0.7) {
+        tooltip.style.left = `${tooltipX - tooltip.offsetWidth - 10}px`;
+      }
+    });
+
+    overlay.addEventListener('mouseleave', () => {
+      hoverLine.style.display = 'none';
+      hoverDot.style.display = 'none';
+      tooltip.style.display = 'none';
+    });
+
+  } catch (err) {
+    console.error('Chart error:', err);
+    container.innerHTML = '<div class="fund-chart-loading">Erro ao carregar histórico.</div>';
+  }
+}
+
 async function loadFundos() {
   const container = document.getElementById('fundos-list');
   container.innerHTML = `<div class="loading"><div class="loading-spinner"></div><p>Carregando fundos da CVM...</p></div>`;
@@ -375,7 +532,34 @@ async function loadFundos() {
         rateLabel: 'Rend. anual',
         rateDate: dateStr
       });
-      container.appendChild(card);
+
+      // Wrap card with chart panel
+      const wrapper = document.createElement('div');
+      wrapper.className = 'fund-card-wrapper';
+
+      // Add hint text to card
+      const hint = document.createElement('div');
+      hint.className = 'fund-chart-hint';
+      hint.textContent = '\ud83d\udcc8 Ver hist\u00f3rico';
+      card.appendChild(hint);
+
+      const chartPanel = document.createElement('div');
+      chartPanel.className = 'fund-chart-panel';
+
+      wrapper.appendChild(card);
+      wrapper.appendChild(chartPanel);
+
+      let chartLoaded = false;
+      wrapper.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isExpanded = chartPanel.classList.toggle('expanded');
+        if (isExpanded && !chartLoaded) {
+          chartLoaded = true;
+          renderFundChart(fundo.cnpj, chartPanel);
+        }
+      });
+
+      container.appendChild(wrapper);
     });
 
     // Show source info
