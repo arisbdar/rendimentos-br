@@ -413,6 +413,126 @@
       "vencimento": "2031-04-15",
       "rating": "AAA",
       "ativo": true
+    },
+    {
+      "id": "cosan-debenture",
+      "codigo": "CSAN18",
+      "emissor": "Cosan S.A.",
+      "tipo": "DI+",
+      "spread": 1.90,
+      "vencimento": "2030-07-15",
+      "rating": "AA+",
+      "ativo": true
+    },
+    {
+      "id": "compass-debenture",
+      "codigo": "PASS14",
+      "emissor": "Compass Gás e Energia S.A.",
+      "tipo": "DI+",
+      "spread": 1.10,
+      "vencimento": "2031-03-01",
+      "rating": "AAA",
+      "ativo": true
+    },
+    {
+      "id": "marfrig-debenture",
+      "codigo": "MRFG19",
+      "emissor": "Marfrig Global Foods S.A.",
+      "tipo": "DI+",
+      "spread": 1.55,
+      "vencimento": "2030-09-15",
+      "rating": "AAA",
+      "ativo": true
+    },
+    {
+      "id": "algar-debenture",
+      "codigo": "ALGA15",
+      "emissor": "Algar Telecom S.A.",
+      "tipo": "DI+",
+      "spread": 1.30,
+      "vencimento": "2030-06-01",
+      "rating": "AAA",
+      "ativo": true
+    },
+    {
+      "id": "taesa-debenture",
+      "codigo": "TAEE22",
+      "emissor": "Taesa S.A.",
+      "tipo": "IPCA+",
+      "spread": 0.75,
+      "vencimento": "2044-09-15",
+      "rating": "AAA",
+      "ativo": true
+    },
+    {
+      "id": "engie-debenture",
+      "codigo": "EGIE18",
+      "emissor": "Engie Brasil Energia S.A.",
+      "tipo": "IPCA+",
+      "spread": 0.65,
+      "vencimento": "2038-12-15",
+      "rating": "AAA",
+      "ativo": true
+    },
+    {
+      "id": "cemig-debenture",
+      "codigo": "CMIG28",
+      "emissor": "Cemig Distribuição S.A.",
+      "tipo": "DI+",
+      "spread": 1.35,
+      "vencimento": "2031-06-01",
+      "rating": "AAA",
+      "ativo": true
+    },
+    {
+      "id": "vamos-debenture",
+      "codigo": "VAMO16",
+      "emissor": "Vamos Locação S.A.",
+      "tipo": "DI+",
+      "spread": 2.20,
+      "vencimento": "2029-03-15",
+      "rating": "AA+",
+      "ativo": true
+    },
+    {
+      "id": "simpar-debenture",
+      "codigo": "SMPR12",
+      "emissor": "Simpar S.A.",
+      "tipo": "DI+",
+      "spread": 2.35,
+      "vencimento": "2030-01-15",
+      "rating": "AA",
+      "ativo": true
+    },
+    {
+      "id": "natura-debenture",
+      "codigo": "NTCO14",
+      "emissor": "Natura &Co Holding S.A.",
+      "tipo": "DI+",
+      "spread": 1.60,
+      "vencimento": "2029-11-01",
+      "rating": "AAA",
+      "ativo": true
+    },
+    {
+      "id": "copel-debenture",
+      "codigo": "CPLE18",
+      "emissor": "Copel Distribuição S.A.",
+      "tipo": "IPCA+",
+      "spread": 0.70,
+      "vencimento": "2037-06-15",
+      "rating": "AAA",
+      "ativo": true
+    },
+    {
+      "id": "isa-energia-debenture",
+      "codigo": "ISAE15",
+      "emissor": "ISA Energia Brasil S.A.",
+      "tipo": "IPCA+",
+      "spread": 0.60,
+      "vencimento": "2040-03-15",
+      "rating": "AAA",
+      "ativo": true
     }
   ],
   "benchmarks": {
